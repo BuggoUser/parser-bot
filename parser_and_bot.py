@@ -10,7 +10,7 @@ import user_data
 class AnswerPrice(StatesGroup):
     price = State()
 
-bot = Bot(token='7858506497:AAH5h7Yg-Rp8ZSV-IWpwcfUsdrbXljt8Y-0')
+bot = Bot()
 dp = Dispatcher()
 
 @dp.message(Command('start'))
