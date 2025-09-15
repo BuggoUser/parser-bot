@@ -52,10 +52,23 @@ def get_data_from_db():
     get_data = c.fetchall()
     return get_data
 
+def get_price_from_db():
+    all_price = c.execute('''SELECT price, article FROM main_data''').fetchall()
+    return all_price
+
 def get_article_from_db():
     c.execute('''SELECT article FROM main_data''')
     get_data_article = c.fetchall()
     return get_data_article
+
+def update_price(new_price):
+    res = []
+    for i in new_price:
+        res.append((i[0][1], i[0][2]))
+
+    for i in res:
+        c.execute('''UPDATE main_data SET price = ? WHERE article = ?''', (i[0], i[1]))
+        db.commit()
 
 def insert_data_to_db(list_data):
     c.executemany('''INSERT OR IGNORE INTO main_data (name_product, price, article, link) VALUES (?, ?, ?, ?)''', list_data)
@@ -85,6 +98,22 @@ def parser():
     except Exception as e:
         print(e)
 
+def check_new_price():
+    sale_for_product = []
+    set_data = parser()
+    save_price = get_price_from_db()
+
+    for p in set_data:
+        for s in save_price:
+            if p[2] == s[1]:
+                if int(p[1]) != s[0]:
+                    print('Скидка')
+                    sale_for_product.append((p, s[0]))
+                else:
+                    print('Цена не изменилась')
+    update_price(sale_for_product)
+    return sale_for_product
+
 def insert_data_and_validate():
     """Получаю список из кортежей"""
     set_data = parser()
@@ -109,5 +138,5 @@ def insert_data_and_validate():
 
 if __name__ == '__main__':
     start_db()
-    print(parser())
+    insert_data_and_validate()
     close_db()

@@ -35,9 +35,9 @@ async def cmd_send(message: Message):
             await message.answer(f'Отлично! Я буду уведомлять вас о всех новинках! Чтобы отключить рассылку, используйте /stop')
 
 async def send_data():
+    data_new_price = parser_wb.check_new_price()
     data_for_send = parser_wb.insert_data_and_validate()
     users_for_send = user_data.get_all_users()
-    count = 0
 
     if data_for_send:
         for user in users_for_send:
@@ -47,7 +47,16 @@ async def send_data():
                     f'*Товар:* {p[0]} \n'
                     f'*Цена:* {p[1]} *рублей* \n'
                     f'*Ссылка:* {p[3]} \n', parse_mode='Markdown')
-                    count += 1
+
+    if data_new_price:
+        for user in users_for_send:
+            for p in data_new_price:
+                if user[1] == 1:
+                    await bot.send_message(user[0], f'🔔 Скидка 🔔 \n \n'
+                    f'*Товар:* {p[0][0]} \n'
+                    f'*Новая цена:* {p[0][1]} *рублей* \n'
+                    f'*Старая цена* {p[1]} *рублей* \n'
+                    f'*Ссылка:* {p[0][3]} \n', parse_mode='Markdown')
     else:
         print('Новинок нет!')
 
@@ -59,7 +68,7 @@ async def cmd_stop(message: Message):
 
 async def main():
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(send_data, 'cron', hour=20, minute=47)
+    scheduler.add_job(send_data, 'interval', seconds=15)
     scheduler.start()
     try:
         parser_wb.start_db()
